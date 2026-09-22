@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mittal Sweets — API</title>
+<style>
+  :root {
+    --bg: #fff;
+    --ink: #18181b;
+    --muted: #71717a;
+    --line: #e4e4e7;
+    --soft: #f4f4f5;
+    --accent: #2f3ad4;
+    --bad: #c81e1e;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font: 15px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+  }
+  main { max-width: 680px; margin: 0 auto; padding: 48px 20px 96px; }
+
+  h1 { font-size: 28px; margin: 0 0 4px; letter-spacing: -0.02em; }
+  .sub { color: var(--muted); margin: 0 0 40px; }
+
+  h2 {
+    font-size: 12px; font-weight: 600; letter-spacing: 0.08em;
+    text-transform: uppercase; color: var(--muted);
+    margin: 40px 0 12px;
+  }
+
+  .card {
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 16px;
+  }
+  .route { display: flex; align-items: baseline; gap: 10px; margin-bottom: 4px; }
+  .method { font: 600 12px/1 ui-monospace, SFMono-Regular, Menlo, monospace; color: var(--muted); }
+  .path {
+    font: 600 15px/1 ui-monospace, SFMono-Regular, Menlo, monospace;
+    color: var(--accent); text-decoration: underline;
+  }
+  .desc { color: var(--ink); margin: 0 0 16px; }
+
+  label { display: block; font-size: 13px; color: var(--muted); margin-bottom: 6px; }
+  input {
+    font: inherit; padding: 9px 12px; width: 100%; max-width: 220px;
+    border: 1px solid var(--line); border-radius: 7px; background: var(--bg); color: var(--ink);
+  }
+  input:focus { outline: 2px solid var(--accent); outline-offset: -1px; }
+  .fields { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 16px; }
+  .fields > div { flex: 1 1 130px; }
+
+  button {
+    font: 500 14px/1 inherit; padding: 10px 16px;
+    border: 1px solid var(--line); border-radius: 7px;
+    background: var(--soft); color: var(--ink); cursor: pointer;
+  }
+  button:hover { background: #e9e9ec; }
+  button.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+  button.primary:hover { filter: brightness(1.1); }
+
+  pre {
+    margin: 16px 0 0; padding: 14px;
+    background: var(--soft); border-radius: 8px;
+    font: 12.5px/1.6 ui-monospace, SFMono-Regular, Menlo, monospace;
+    overflow-x: auto; white-space: pre-wrap; word-break: break-word;
+  }
+  pre:empty { display: none; }
+  pre.err { background: #fef2f2; color: var(--bad); }
+
+  .stats { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 16px; }
+  .stat { flex: 1 1 130px; background: var(--soft); border-radius: 8px; padding: 14px 16px; }
+  .stat .k {
+    font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase;
+    color: var(--muted); margin-bottom: 4px;
+  }
+  .stat .v { font-size: 24px; font-weight: 600; letter-spacing: -0.02em; }
+  .stat .v small { font-size: 13px; font-weight: 400; color: var(--muted); }
+</style>
+</head>
+<body>
+<main>
+  <h1>Mittal Sweets</h1>
+  <p class="sub">Plain Node.js serverless functions on Vercel.</p>
+
+  <h2>Today at the shop</h2>
+  <div class="card">
+    <div class="fields">
+      <div>
+        <label for="days">days to include</label>
+        <input id="days" type="number" min="1" value="1">
+      </div>
+    </div>
+    <button class="primary" onclick="loadRevenue()">Refresh</button>
+    <div id="revenue-stats" class="stats"></div>
+    <pre id="revenue-out"></pre>
+  </div>
+
+  <h2>API endpoints</h2>
+
+  <div class="card">
+    <div class="route">
+      <span class="method">GET</span>
+      <a class="path" href="/api/revenue" target="_blank">/api/revenue</a>
+    </div>
+    <p class="desc">Adds up today&rsquo;s sales and names the top-earning item.</p>
+    <button onclick="call('/api/revenue', 'rev-raw')">Fetch</button>
+    <pre id="rev-raw"></pre>
+  </div>
+
+  <div class="card">
+    <div class="route">
+      <span class="method">GET &middot; POST</span>
+      <a class="path" href="/api/sales" target="_blank">/api/sales</a>
+    </div>
+    <p class="desc">Reads every sale, or records a new one.</p>
+    <button onclick="call('/api/sales', 'sales-raw')">Fetch all</button>
+    <div class="fields" style="margin-top:16px">
+      <div>
+        <label for="s-item">item</label>
+        <input id="s-item" value="Kaju Barfi">
+      </div>
+      <div>
+        <label for="s-qty">qty</label>
+        <input id="s-qty" type="number" step="0.5" value="1">
+      </div>
+      <div>
+        <label for="s-rate">rate</label>
+        <input id="s-rate" type="number" value="520">
+      </div>
+    </div>
+    <button onclick="addSale()">Record sale (POST)</button>
+    <pre id="sales-raw"></pre>
+  </div>
+
+  <div class="card">
+    <div class="route">
+      <span class="method">GET</span>
+      <a class="path" href="/api/hello" target="_blank">/api/hello</a>
+    </div>
+    <p class="desc">Returns a greeting and the current server time.</p>
+    <button onclick="call('/api/hello', 'hello-raw')">Fetch</button>
+    <pre id="hello-raw"></pre>
+  </div>
+</main>
+
+<script>
+  const money = n => "₹" + Number(n).toLocaleString("en-IN");
+
+  function show(id, data, isError) {
+    const el = document.getElementById(id);
+    el.textContent = typeof data === "string" ? data : JSON.stringify(data, null, 2);
+    el.className = isError ? "err" : "";
+  }
+
+  // Every endpoint is called the same way. This is the whole pattern.
+  async function call(url, outId) {
+    show(outId, "Loading…");
+    try {
+      const res = await fetch(url);
+      const data = await res.json();
+      show(outId, data, !res.ok);
+      return res.ok ? data : null;
+    } catch (err) {
+      show(outId, "Could not reach the API: " + err.message, true);
+      return null;
+    }
+  }
+
+  async function loadRevenue() {
+    const days = document.getElementById("days").value || 1;
+    const data = await call("/api/revenue?days=" + days, "revenue-out");
+    const box = document.getElementById("revenue-stats");
+
+    if (!data) { box.innerHTML = ""; return; }
+
+    box.innerHTML = `
+      <div class="stat">
+        <div class="k">Revenue</div>
+        <div class="v">${money(data.total_revenue)}</div>
+      </div>
+      <div class="stat">
+        <div class="k">Sales</div>
+        <div class="v">${data.sales_count}</div>
+      </div>
+      <div class="stat">
+        <div class="k">Top item</div>
+        <div class="v" style="font-size:17px">
+          ${data.top_item ? data.top_item.item : "—"}
+          ${data.top_item ? `<small>${money(data.top_item.revenue)}</small>` : ""}
+        </div>
+      </div>`;
+    // The raw JSON is already in the <pre> above; the cards just read nicer.
+  }
+
+  async function addSale() {
+    const body = {
+      item: document.getElementById("s-item").value,
+      qty: Number(document.getElementById("s-qty").value),
+      rate: Number(document.getElementById("s-rate").value)
+    };
+    show("sales-raw", "Saving…");
+    try {
+      const res = await fetch("/api/sales", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body)
+      });
+      const data = await res.json();
+      show("sales-raw", data, !res.ok);
+      if (res.ok) loadRevenue();   // the new sale should show up in the total
+    } catch (err) {
+      show("sales-raw", "Could not reach the API: " + err.message, true);
+    }
+  }
+
+  loadRevenue();
+</script>
+</body>
+</html>
