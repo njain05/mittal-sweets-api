@@ -1,5 +1,7 @@
 # Mittal Sweets — API
 
+**Live: [mittal-sweets-api.vercel.app](https://mittal-sweets-api.vercel.app)**
+
 Session 7 homework for the Punjab Jobs AI Bootcamp. Plain Node.js serverless
 functions on Vercel, backed by Supabase.
 
