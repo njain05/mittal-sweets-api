@@ -10,3 +10,5 @@ node_modules/
 # course material, not source
 *.pdf
 *.mov
+.vercel
+.env*
